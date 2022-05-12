@@ -1,0 +1,6 @@
+.env
+artifacts/
+cache/
+node_modules/
+.vscode/
+typechain-types/

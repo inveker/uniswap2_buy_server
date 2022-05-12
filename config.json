@@ -1,0 +1,8 @@
+{
+    "port": 5017,
+    "dev_rpc": "",
+    "prod_rpc": "",
+    "prod_wallets_private_key": [
+        ""
+    ]
+}
