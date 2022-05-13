@@ -2,6 +2,8 @@ import { BigintIsh, ChainId, Fetcher, Pair, Route, Token, TokenAmount, Trade, Tr
 import { ethers, Wallet } from 'ethers'
 import { Percent } from '@uniswap/sdk'
 import UniswapV2Router02Abi from '../abi/UniswapV2Router02.json';
+import appLog from './appLog';
+import IERC20 from '../abi/IERC20.json';
 
 interface ISwapData {
     amountOutMin: string;
@@ -24,9 +26,10 @@ export default class Uniswap {
         wallets: Wallet[]
     ) {
         for (const wallet of wallets) {
-            this.wallets[wallet.address] = wallet;
+            this.wallets[wallet.address] = wallet.connect(provider);
         }
         this.maxFeePerGas = maxFeePerGas * Math.pow(10, 9);
+        appLog(`Uniswap initializated: router = ${this.UNISWAP_ROUTER}; wallets count = ${Object.keys(this.wallets).length}; maxFeePerGas = ${this.maxFeePerGas} wei`);
     }
 
     public async swapExactETHForTokens(walletAddress: string, inputAmount: BigintIsh, outputToken: string, slippage: BigintIsh, timeout?: number) {
@@ -34,13 +37,10 @@ export default class Uniswap {
         const uniswapRouter = this._uniswapRouter(wallet);
         const swapData = await this._getSwapData(inputAmount, this._wethToken(), await Fetcher.fetchTokenData(1, outputToken), slippage, timeout);
         let feeData = await this.provider.getFeeData();
-        console.log(JSON.stringify({
-            maxFeePerGas: `${feeData.maxFeePerGas}`,
-            maxPriorityFeePerGas: `${feeData.maxPriorityFeePerGas}`,
-            gasPrice: `${feeData.gasPrice}`,
-        }, null, 4));
 
         if(this.maxFeePerGas === 0 || feeData.maxFeePerGas.lte(this.maxFeePerGas)) {
+            const token = new ethers.Contract(outputToken, IERC20, wallet);
+            const initialBalance = await token.balanceOf(walletAddress);
             await uniswapRouter.swapExactETHForTokensSupportingFeeOnTransferTokens(
                 swapData.amountOutMin,
                 swapData.path,
@@ -52,6 +52,9 @@ export default class Uniswap {
                     maxFeePerGas: this.maxFeePerGas !== 0 ? this.maxFeePerGas : feeData["maxFeePerGas"],
                 }
             );
+            appLog(`Swap result = ${(await token.balanceOf(walletAddress)).sub(initialBalance)}`);
+        } else {
+            appLog(`Gas error. config.maxFeePerGas = ${this.maxFeePerGas}; network.maxFeePerGas = ${feeData.maxFeePerGas}`);
         }
     }
 

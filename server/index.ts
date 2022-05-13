@@ -3,7 +3,7 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import Uniswap from '../scripts/Uniswap';
 import CONFIG from '../config.json';
-
+import appLog from '../scripts/appLog';
 
 const port = CONFIG.port;
 
@@ -24,23 +24,32 @@ for (const privateKey of CONFIG.prod_wallets_private_key) {
 const uniswap = new Uniswap(provider, CONFIG.max_fee_per_gas, wallets);
 
 app.post('/swapExactETHForTokens', async (request, response) => {
-  console.log('start swapExactETHForTokens');
-  const body: {
-    walletAddress: string;
-    inputAmount: string;
-    outputToken: string;
-    slippage: string;
-    timeout?: number;
-  } = request.body;
-  console.log(JSON.stringify(request.body, null, 4))
-  await uniswap.swapExactETHForTokens(
-    body.walletAddress,
-    body.inputAmount,
-    body.outputToken,
-    body.slippage,
-    body.timeout
-  );
-  console.log('end swapExactETHForTokens');
+  try {
+    const startTime = Date.now();
+    const body: {
+      walletAddress: string;
+      inputAmount: string;
+      outputToken: string;
+      slippage: string;
+      timeout?: number;
+    } = request.body;
+  
+    appLog(`START POST /swapExactETHForTokens. DATA: ${JSON.stringify(body, null, 4)}`);
+    
+    await uniswap.swapExactETHForTokens(
+      body.walletAddress,
+      body.inputAmount,
+      body.outputToken,
+      body.slippage,
+      body.timeout
+    );
+  
+    appLog(`END POST /swapExactETHForTokens.`);
+    appLog(`All time ${Date.now() - startTime} ms`);
+  } catch(e) {
+    appLog(`EXCEPTION ${e}`);
+  }
+  response.end();
 });
 
 app.listen(port, () => console.log(`Running on port ${port}`));
