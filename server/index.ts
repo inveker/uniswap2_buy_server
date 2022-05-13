@@ -3,8 +3,6 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import Uniswap from '../scripts/Uniswap';
 import CONFIG from '../config.json';
-import StatusLogger from '../scripts/StatusLogger';
-
 
 
 const port = CONFIG.port;
@@ -27,8 +25,6 @@ const uniswap = new Uniswap(provider, CONFIG.max_fee_per_gas, wallets);
 
 app.post('/swapExactETHForTokens', async (request, response) => {
   console.log('start swapExactETHForTokens');
-  StatusLogger.add();
-  StatusLogger.add();
   const body: {
     walletAddress: string;
     inputAmount: string;
