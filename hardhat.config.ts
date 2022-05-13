@@ -16,7 +16,7 @@ let config: HardhatUserConfig = {
             chainId: 1337,
             forking: {
                 url: CONFIG.dev_rpc,
-                blockNumber: 14679632,
+                // blockNumber: 14679632,
             },
             loggingEnabled: true,
             blockGasLimit: 0x1fffffffffffff,

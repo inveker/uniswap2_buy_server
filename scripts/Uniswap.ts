@@ -16,11 +16,17 @@ export default class Uniswap {
     readonly WETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 
     wallets: { [key: string]: Wallet } = {};
+    maxFeePerGas: number;
 
-    constructor(readonly provider: ethers.providers.JsonRpcProvider, wallets: Wallet[]) {
+    constructor(
+        readonly provider: ethers.providers.JsonRpcProvider,
+        maxFeePerGas: number,
+        wallets: Wallet[]
+    ) {
         for (const wallet of wallets) {
             this.wallets[wallet.address] = wallet;
         }
+        this.maxFeePerGas = maxFeePerGas * Math.pow(10, 9);
     }
 
     public async swapExactETHForTokens(walletAddress: string, inputAmount: BigintIsh, outputToken: string, slippage: BigintIsh, timeout?: number) {
@@ -28,17 +34,25 @@ export default class Uniswap {
         const uniswapRouter = this._uniswapRouter(wallet);
         const swapData = await this._getSwapData(inputAmount, this._wethToken(), await Fetcher.fetchTokenData(1, outputToken), slippage, timeout);
         let feeData = await this.provider.getFeeData();
-        await uniswapRouter.swapExactETHForTokensSupportingFeeOnTransferTokens(
-            swapData.amountOutMin,
-            swapData.path,
-            walletAddress,
-            swapData.deadline,
-            {
-                value: swapData.value,
-                maxPriorityFeePerGas: feeData["maxPriorityFeePerGas"],
-                maxFeePerGas: feeData["maxFeePerGas"],
-            }
-        );
+        console.log(JSON.stringify({
+            maxFeePerGas: `${feeData.maxFeePerGas}`,
+            maxPriorityFeePerGas: `${feeData.maxPriorityFeePerGas}`,
+            gasPrice: `${feeData.gasPrice}`,
+        }, null, 4));
+
+        if(this.maxFeePerGas === 0 || feeData.maxFeePerGas.lte(this.maxFeePerGas)) {
+            await uniswapRouter.swapExactETHForTokensSupportingFeeOnTransferTokens(
+                swapData.amountOutMin,
+                swapData.path,
+                walletAddress,
+                swapData.deadline,
+                {
+                    value: swapData.value,
+                    maxPriorityFeePerGas: feeData["maxPriorityFeePerGas"],
+                    maxFeePerGas: this.maxFeePerGas !== 0 ? this.maxFeePerGas : feeData["maxFeePerGas"],
+                }
+            );
+        }
     }
 
     protected _uniswapRouter(wallet: Wallet): ethers.Contract {

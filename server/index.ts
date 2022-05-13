@@ -3,6 +3,7 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import Uniswap from '../scripts/Uniswap';
 import CONFIG from '../config.json';
+import StatusLogger from '../scripts/StatusLogger';
 
 
 
@@ -22,10 +23,12 @@ for (const privateKey of CONFIG.prod_wallets_private_key) {
   wallets.push(new Wallet(privateKey));
 }
 
-const uniswap = new Uniswap(provider, wallets);
+const uniswap = new Uniswap(provider, CONFIG.max_fee_per_gas, wallets);
 
 app.post('/swapExactETHForTokens', async (request, response) => {
   console.log('start swapExactETHForTokens');
+  StatusLogger.add();
+  StatusLogger.add();
   const body: {
     walletAddress: string;
     inputAmount: string;

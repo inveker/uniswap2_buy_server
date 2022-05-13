@@ -17,6 +17,7 @@ describe(`Uniswap`, () => {
 
         const uniswap = new Uniswap(
             ethers.provider,
+            0,
             [testWallet]
         );
         
