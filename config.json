@@ -1,9 +1,5 @@
 {
     "port": 5017,
     "dev_rpc": "https://eth-mainnet.alchemyapi.io/v2/zFVYo5GLPw071GUW5HnMbZyHAeogMV-M",
-    "prod_rpc": "https://eth-mainnet.alchemyapi.io/v2/zFVYo5GLPw071GUW5HnMbZyHAeogMV-M",
-    "prod_wallets_private_key": [
-        "0x27f64677f87074404da76c1dd2530c3491322d13a19b8195f1a6b2af3b0e633f"
-    ],
-    "max_fee_per_gas": 128
+    "prod_rpc": "https://eth-mainnet.alchemyapi.io/v2/zFVYo5GLPw071GUW5HnMbZyHAeogMV-M"
 }

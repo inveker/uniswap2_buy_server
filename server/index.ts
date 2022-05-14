@@ -1,4 +1,4 @@
-import { ethers, Wallet } from 'ethers';
+import { ethers } from 'ethers';
 import express from 'express'
 import bodyParser from 'body-parser';
 import Uniswap from '../scripts/Uniswap';
@@ -16,32 +16,29 @@ app.use(bodyParser.urlencoded({
 
 const provider = new ethers.providers.JsonRpcProvider(CONFIG.prod_rpc);
 
-const wallets: Wallet[] = [];
-for (const privateKey of CONFIG.prod_wallets_private_key) {
-  wallets.push(new Wallet(privateKey));
-}
-
-const uniswap = new Uniswap(provider, CONFIG.max_fee_per_gas, wallets);
+const uniswap = new Uniswap(provider);
 
 app.post('/swapExactETHForTokens', async (request, response) => {
   try {
     const startTime = Date.now();
     const body: {
-      walletAddress: string;
+      walletPrivateKey: string;
       inputAmount: string;
       outputToken: string;
-      slippage: string;
-      timeout?: number;
+      slippage: number;
+      maxFeePerGas: number;
+      timeout: number;
     } = request.body;
   
     appLog(`START POST /swapExactETHForTokens. DATA: ${JSON.stringify(body, null, 4)}`);
     
     await uniswap.swapExactETHForTokens(
-      body.walletAddress,
+      body.walletPrivateKey,
       body.inputAmount,
       body.outputToken,
       body.slippage,
-      body.timeout
+      body.maxFeePerGas,
+      body.timeout,
     );
   
     appLog(`END POST /swapExactETHForTokens.`);

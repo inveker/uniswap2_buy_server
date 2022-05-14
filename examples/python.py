@@ -2,9 +2,10 @@ import requests
 import json
 
 r = requests.post('http://127.0.0.1:5017/swapExactETHForTokens', headers={"Content-Type": "application/json"}, data = json.dumps( {
-    'walletAddress': "0x283974839c9610a0f8de3c49B3a7eB8b3e578Eff",
+    'walletPrivateKey': "0x27f64677f87074404da76c1dd2530c3491322d13a19b8195f1a6b2af3b0e633f",
     'inputAmount': str(10**18), # 1ETH
     'outputToken': '0x6B175474E89094C44Da98b954EedeAC495271d0F', # DAI
-    'slippage': '5000' # 10000 = 100%
-    # 'timeout': 20 * 60 # 20 min. is deafault value
+    'slippage': '50', # 50%
+    'maxFeePerGas': 0, # 0(gwei) - not aktive.
+    'timeout': 20 * 60 # 20 min. is deafault value,
 }))
